@@ -41,6 +41,31 @@ router.post("/posts", auth_middleware, async (req, res) => {
     }
 });
 
+// 좋아요 게시글 보기
+router.get("/posts/likes", auth_middleware, async (req, res) => {
+    try {
+        const user_id = req.decoded.user_id;
+
+
+        const data = await Post.findAll({
+            attributes: ["id", "title", "content", "date", "likes"],
+            include: [{
+                model: Like,
+                attributes: [],
+                where: {done: 1, user_id: user_id }
+            }]
+        });
+
+        res.status(200).json({ data });
+
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({
+            msg: "좋아요 게시글 조회에 실패하였습니다."
+        });
+    }
+});
+
 // 게시글 조회
 router.get("/posts/:post_id", async (req, res) => {
     const { post_id } = req.params;
@@ -214,7 +239,7 @@ router.get("/posts/:post_id/comments", async (req, res) => {
 });
 
 // 댓글 수정
-router.put("/posts/:post_id/comments/:comment_id", async (req, res) => {
+router.put("/posts/:post_id/comments/:comment_id", auth_middleware, async (req, res) => {
     try {
         const { comment_id } = req.params;
         const { comment } = req.body;
@@ -254,7 +279,7 @@ router.put("/posts/:post_id/comments/:comment_id", async (req, res) => {
 });
 
 // 댓글 삭제
-router.delete("/posts/:post_id/comments/:comment_id", async (req, res) => {
+router.delete("/posts/:post_id/comments/:comment_id", auth_middleware, async (req, res) => {
     try {
         const { comment_id } = req.params;
 
@@ -284,7 +309,7 @@ router.delete("/posts/:post_id/comments/:comment_id", async (req, res) => {
 });
 
 // 게시글 좋아요
-router.post("/posts/:post_id/likes", async (req, res) => {
+router.post("/posts/:post_id/likes", auth_middleware, async (req, res) => {
     try {
         const { post_id } = req.params;
         const user_id = 1;
