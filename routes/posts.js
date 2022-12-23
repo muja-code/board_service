@@ -7,6 +7,38 @@ const e = require("express");
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * paths:
+ *  /api/posts:
+ *    get:
+ *      summary: "게시글 데이터 전체 리스트"
+ *      description: "서버에 데이터를 보내지 않고 Get방식으로 요청"
+ *      tags: [posts]
+ *      responses:
+ *        "200":
+ *          description: 전체 게시글 리스트
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                    data:
+ *                      type: object
+ *                      example:
+ *                          [
+ *                            { "id": 1, 
+ *                              "title": "제목", 
+ *                              "content": "내용", 
+ *                              "date": "2022년12월23일14시51분00초",
+ *                              "likes": 0 },
+ *                            { "id": 2, 
+ *                              "title": "제목", 
+ *                              "content": "내용", 
+ *                              "date": "2022년12월23일14시51분00초",
+ *                              "likes": 0 }
+ *                          ]
+ */
 // 게시글 리스트
 router.get("/posts", async (req, res) => {
     const data = await Post.findAll({
@@ -17,6 +49,41 @@ router.get("/posts", async (req, res) => {
     res.status(200).json({ data });
 });
 
+
+/**
+ * @swagger
+ *
+ * /api/posts:
+ *  post:
+ *      summary: "게시글 작성"
+ *      description: "POST 방식으로 게시글을 등록한다"
+ *      tags: [posts]
+ *      requestBody:
+ *          description: "사용자가 서버로 게시글을 전달한다"
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          title:
+ *                              type: string
+ *                              description: "게시글 제목"
+ *                          content:
+ *                              type: string
+ *                              description: "게시글 내용"
+ *      responses:
+ *          "200":
+ *              description: "게시글 작성이 성공했습니다"
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              msg:
+ *                                  type: string
+ *                                  description: "게시글 작성이 성공했습니다"
+ */
 // 게시글 작성
 router.post("/posts", auth_middleware, async (req, res) => {
     try {
@@ -84,6 +151,30 @@ router.get("/posts/:post_id", async (req, res) => {
     res.status(200).json({ data });
 });
 
+
+/**
+ * @swagger
+ *
+ * /api/posts:
+ *  put:
+ *    summary: "게시글 수정"
+ *    description: "PUT 방식으로 게시글을 수정한다."
+ *    tags: [posts]
+ *    requestBody:
+ *      description: 사용자가 서버로 전달하는 값에 따라 결과 값은 다릅니다. (게시글 수정)
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              title:
+ *                type: string
+ *                description: "게시글 제목"
+ *              cotent:
+ *                type: string
+ *                description: "게시글 내용"
+ */
 // 게시글 수정
 router.put("/posts/:post_id", auth_middleware, async (req, res) => {
     try {
@@ -255,7 +346,7 @@ router.get("/posts/:post_id/comments", async (req, res) => {
         });
     }
 });
-  
+
 // 댓글 수정
 router.put("/posts/:post_id/comments/:comment_id", auth_middleware, async (req, res) => {
     try {
