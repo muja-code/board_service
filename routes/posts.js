@@ -52,7 +52,7 @@ router.get("/posts/likes", auth_middleware, async (req, res) => {
             include: [{
                 model: Like,
                 attributes: [],
-                where: {done: 1, user_id: user_id }
+                where: { done: 1, user_id: user_id }
             }]
         });
 
@@ -89,6 +89,7 @@ router.put("/posts/:post_id", auth_middleware, async (req, res) => {
     try {
         const { post_id } = req.params;
         const { title, content } = req.body;
+        const user_id = req.decoded.user_id;
 
         if (!title || !content) {
             return res.status(400).json({
@@ -108,13 +109,21 @@ router.put("/posts/:post_id", auth_middleware, async (req, res) => {
             });
         }
 
-        const post = Post.findOne({
-            where: { id: post_id }
+        const post = await Post.findOne({
+            where: { id: post_id },
+            attributes: ["id", "user_id"]
         })
 
         if (!post) {
             return res.status(404).json({
                 msg: "게시글이 존재하지 않습니다."
+            });
+        }
+
+        console.log(post)
+        if (post.user_id !== user_id) {
+            return res.status(403).json({
+                msg: "게시글의 작성자가 아닙니다."
             });
         }
 
@@ -141,14 +150,22 @@ router.put("/posts/:post_id", auth_middleware, async (req, res) => {
 router.delete("/posts/:post_id", auth_middleware, async (req, res) => {
     try {
         const { post_id } = req.params;
+        const user_id = req.decoded.user_id;
 
-        const post = Post.findOne({
-            where: { id: post_id }
+        const post = await Post.findOne({
+            where: { id: post_id },
+            attributes: ["id", "user_id"]
         })
 
         if (!post) {
             return res.status(404).json({
                 msg: "게시글이 존재하지 않습니다."
+            });
+        }
+
+        if (post.user_id !== user_id) {
+            return res.status(403).json({
+                msg: "게시글의 작성자가 아닙니다."
             });
         }
 
@@ -180,8 +197,9 @@ router.post("/posts/:post_id/comments", auth_middleware, async (req, res) => {
             });
         }
 
-        const post = Post.findOne({
-            where: { id: post_id }
+        const post = await Post.findOne({
+            where: { id: post_id },
+            attributes: ["id"]
         })
 
         if (!post) {
@@ -237,12 +255,13 @@ router.get("/posts/:post_id/comments", async (req, res) => {
         });
     }
 });
-
+  
 // 댓글 수정
 router.put("/posts/:post_id/comments/:comment_id", auth_middleware, async (req, res) => {
     try {
-        const { comment_id } = req.params;
+        const { post_id, comment_id } = req.params;
         const { comment } = req.body;
+        const user_id = req.decoded.user_id;
 
         if (!comment || comment === "") {
             return res.status(412).json({
@@ -250,7 +269,7 @@ router.put("/posts/:post_id/comments/:comment_id", auth_middleware, async (req, 
             });
         }
 
-        const post = Post.findOne({
+        const post = await Post.findOne({
             where: { id: post_id }
         })
 
@@ -260,6 +279,22 @@ router.put("/posts/:post_id/comments/:comment_id", auth_middleware, async (req, 
             });
         }
 
+        const check_comment = await Comment.findOne({
+            where: { id: comment_id },
+            attributes: ["id", "user_id"]
+        })
+
+        if (!check_comment) {
+            return res.status(404).json({
+                msg: "댓글이 존재하지 않습니다."
+            });
+        }
+
+        if (check_comment.user_id !== user_id) {
+            return res.status(403).json({
+                msg: "댓글의 작성자가 아닙니다."
+            });
+        }
 
         await Comment.update({
             comment
@@ -281,15 +316,33 @@ router.put("/posts/:post_id/comments/:comment_id", auth_middleware, async (req, 
 // 댓글 삭제
 router.delete("/posts/:post_id/comments/:comment_id", auth_middleware, async (req, res) => {
     try {
-        const { comment_id } = req.params;
+        const { post_id, comment_id } = req.params;
+        const user_id = req.decoded.user_id;
 
-        const post = Post.findOne({
+        const post = await Post.findOne({
             where: { id: post_id }
         })
 
         if (!post) {
             return res.status(404).json({
                 msg: "게시글이 존재하지 않습니다."
+            });
+        }
+
+        const check_comment = await Comment.findOne({
+            where: { id: comment_id },
+            attributes: ["id", "user_id"]
+        })
+
+        if (!check_comment) {
+            return res.status(404).json({
+                msg: "댓글이 존재하지 않습니다."
+            });
+        }
+
+        if (check_comment.user_id !== user_id) {
+            return res.status(403).json({
+                msg: "댓글의 작성자가 아닙니다."
             });
         }
 
@@ -314,7 +367,7 @@ router.post("/posts/:post_id/likes", auth_middleware, async (req, res) => {
         const { post_id } = req.params;
         const user_id = 1;
 
-        const post = Post.findOne({
+        const post = await Post.findOne({
             where: { id: post_id }
         })
 

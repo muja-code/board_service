@@ -1,5 +1,6 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const { User } = require("../models");
 
@@ -9,7 +10,19 @@ const router = express.Router();
 router.post("/users", async (req, res) => {
     try {
         const { nickname, password, confirmPassword } = req.body;
-        const re = /[^a-zA-Z0-9]/;
+        const nickname_re = /[^a-zA-Z0-9]/;
+        const password_re = /[^a-zA-Z0-9\!\@\#]/
+
+        const check_token = req.cookies.token;
+
+        try {
+            jwt.verify(check_token, "secret-key")
+            return res.status(412).json({
+                msg: "이미 로그인이 되어있습니다."
+            });
+        } catch (e) {
+            console.log(e);
+        }
 
         if (!nickname || !password || !confirmPassword) {
             throw error;
@@ -25,13 +38,13 @@ router.post("/users", async (req, res) => {
             });
         }
 
-        if (nickname.length < 3 || re.test(nickname)) {
+        if (nickname.length < 3 || nickname_re.test(nickname)) {
             return res.status(412).json({
                 msg: "닉네임 형식이 일치하지 않습니다."
             });
         }
 
-        if (password < 4) {
+        if (password < 4 || password_re.test(password)) {
             return res.status(412).json({
                 msg: "패스워드 형식이 일치하지 않습니다."
             });
@@ -49,7 +62,9 @@ router.post("/users", async (req, res) => {
             });
         }
 
-        await User.create({ nickname, password });
+        const bcry_pw = await bcrypt.hashSync(password, 10);
+
+        await User.create({ nickname, password: bcry_pw });
 
         res.status(201).json({
             msg: "회원가입에 성공했습니다."
@@ -67,13 +82,26 @@ router.post("/users/login", async (req, res) => {
     try {
         const { nickname, password } = req.body;
 
+        const check_token = req.cookies.token;
+
+        try {
+            jwt.verify(check_token, "secret-key")
+            return res.status(412).json({
+                msg: "이미 로그인이 되어있습니다."
+            });
+        } catch (e) {
+            console.log(e);
+        }
+
         const user = await User.findOne({
             where: { nickname },
         });
 
-        if (!user || password !== user.password) {
+        const check_pw = bcrypt.compareSync(password, user.password);
+
+        if (!user || !check_pw) {
             return res.status(412).json({
-                msg: "닉네임 또는 비밀번호를 확인해주세요"
+                msg: "이미 로그인이 되어있습니다."
             });
         }
 
