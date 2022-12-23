@@ -1,2 +1,4 @@
 /node_modules
 /seeders
+.env
+/config/config.json

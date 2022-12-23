@@ -9,14 +9,14 @@ const router = express.Router();
 
 /**
  * @swagger
- * paths:
- *  /api/posts:
- *    get:
+ * 
+ * /api/posts:
+ *  get:
  *      summary: "게시글 데이터 전체 리스트"
  *      description: "서버에 데이터를 보내지 않고 Get방식으로 요청"
  *      tags: [posts]
  *      responses:
- *        "200":
+ *          "200":
  *          description: 전체 게시글 리스트
  *          content:
  *            application/json:

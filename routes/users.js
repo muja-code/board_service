@@ -4,6 +4,9 @@ const bcrypt = require("bcrypt");
 
 const { User } = require("../models");
 
+require("dotenv").config();
+const { JWT_SECRET_KEY } = process.env;
+
 const router = express.Router();
 
 // 회원가입
@@ -16,7 +19,7 @@ router.post("/users", async (req, res) => {
         const check_token = req.cookies.token;
 
         try {
-            jwt.verify(check_token, "secret-key")
+            jwt.verify(check_token, JWT_SECRET_KEY)
             return res.status(412).json({
                 msg: "이미 로그인이 되어있습니다."
             });
@@ -85,7 +88,7 @@ router.post("/users/login", async (req, res) => {
         const check_token = req.cookies.token;
 
         try {
-            jwt.verify(check_token, "secret-key")
+            jwt.verify(check_token, JWT_SECRET_KEY)
             return res.status(412).json({
                 msg: "이미 로그인이 되어있습니다."
             });
@@ -109,7 +112,7 @@ router.post("/users/login", async (req, res) => {
             type: "JWT",
             user_id: user.id,
             nickname: user.nickname
-        }, "secret-key", {
+        }, JWT_SECRET_KEY, {
             expiresIn: "10m"
         });
 

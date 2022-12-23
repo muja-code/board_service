@@ -6,6 +6,9 @@ const postRouter = require("./routes/posts.js");
 const userRouter = require("./routes/users.js");
 const { swaggerUi, specs } = require("./modules/swagger.js")
 
+require("dotenv").config();
+const { PORT } = process.env;
+
 const app = express();
 
 app.use(express.json());
@@ -24,6 +27,6 @@ models.sequelize.sync().then(() => {
     console.log(err);
 });
 
-app.listen(3000, () => {
-    console.log(3000, '포트로 서버가 열렸어요!');
+app.listen(PORT, () => {
+    console.log(PORT, '포트로 서버가 열렸어요!');
 });
