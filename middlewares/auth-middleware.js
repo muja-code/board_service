@@ -1,6 +1,7 @@
 
 const jwt = require("jsonwebtoken");
 
+// 토큰 인증 미들웨어
 module.exports = (req, res, next) => {
     try {
         const token = req.cookies.token;
@@ -9,7 +10,7 @@ module.exports = (req, res, next) => {
         
     } catch (err) {
         res.status(401).send({
-            errorMessage: "로그인 후 이용 가능한 기능입니다.",
+            msg: "로그인 후 이용 가능한 기능입니다.",
         });
     }
 };

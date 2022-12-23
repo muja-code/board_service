@@ -365,7 +365,7 @@ router.delete("/posts/:post_id/comments/:comment_id", auth_middleware, async (re
 router.post("/posts/:post_id/likes", auth_middleware, async (req, res) => {
     try {
         const { post_id } = req.params;
-        const user_id = 1;
+        const user_id = req.decoded.user_id;
 
         const post = await Post.findOne({
             where: { id: post_id }
@@ -389,6 +389,7 @@ router.post("/posts/:post_id/likes", auth_middleware, async (req, res) => {
             }
         })
 
+        // 최초의 좋아요 때문에 필요함
         if (check_like === null) {
             Like.create({ done: 1, post_id, user_id });
             Post.update({
